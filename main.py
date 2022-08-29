@@ -9,20 +9,13 @@ import random
 import time
 
 today = datetime.now()
-# city = os.environ['CITY']
-# birthday = os.environ['BIRTHDAY']
+city = os.environ['CITY']
 
-# app_id = os.environ["APP_ID"]
-# app_secret = os.environ["APP_SECRET"]
+app_id = os.environ["APP_ID"]
+app_secret = os.environ["APP_SECRET"]
 
-# user_id = os.environ["USER_ID"]
-# template_id = os.environ["TEMPLATE_ID"]
-
-city = "杭州市"
-app_id = "wx5d495b5f93a74d5a"
-app_secret = "5b8981ace59da15da1dbd6b46e8d3aa7"
-user_id = "o0PzW6ANZJHURf6tnmx-2G-h4-1w"
-template_id = "a_ewHj_MPM7GI1B4lkjC5J7wtUGPJd5SF-0_qk7G10o"
+user_id = os.environ["USER_ID"]
+template_id = os.environ["TEMPLATE_ID"]
 
 
 def get_weather():
