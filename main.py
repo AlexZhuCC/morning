@@ -1,45 +1,55 @@
 from datetime import date, datetime
 import math
+from unittest import case
 from wechatpy import WeChatClient
-from wechatpy.client.api import WeChatMessage, WeChatTemplate
+from wechatpy.client.api import WeChatMessage
 import requests
 import os
 import random
+import time
 
 today = datetime.now()
-start_date = os.environ['START_DATE']
-city = os.environ['CITY']
-birthday = os.environ['BIRTHDAY']
+# city = os.environ['CITY']
+# birthday = os.environ['BIRTHDAY']
 
-app_id = os.environ["APP_ID"]
-app_secret = os.environ["APP_SECRET"]
+# app_id = os.environ["APP_ID"]
+# app_secret = os.environ["APP_SECRET"]
 
-user_id = os.environ["USER_ID"]
-template_id = os.environ["TEMPLATE_ID"]
+# user_id = os.environ["USER_ID"]
+# template_id = os.environ["TEMPLATE_ID"]
+
+city = "杭州市"
+app_id = "wx5d495b5f93a74d5a"
+app_secret = "5b8981ace59da15da1dbd6b46e8d3aa7"
+user_id = "o0PzW6ANZJHURf6tnmx-2G-h4-1w"
+template_id = "a_ewHj_MPM7GI1B4lkjC5J7wtUGPJd5SF-0_qk7G10o"
 
 
 def get_weather():
   url = "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city=" + city
   res = requests.get(url).json()
   weather = res['data']['list'][0]
-  return weather['weather'], math.floor(weather['temp'])
+  return [weather['weather'], math.floor(weather['high']), math.floor(weather['low']), math.floor(weather['pm25']), weather['airQuality']]
 
-def get_count():
-  delta = today - datetime.strptime(start_date, "%Y-%m-%d")
-  return delta.days
-
-def get_birthday():
-  next = datetime.strptime(str(date.today().year) + "-" + birthday, "%Y-%m-%d")
-  if next < datetime.now():
-    next = next.replace(year=next.year + 1)
-  return (next - today).days
-
-def get_words():
-  words = requests.get("https://api.shadiao.pro/chp")
-  if words.status_code != 200:
-    return get_words()
-  return words.json()['data']['text']
-
+def traffic_restriction():
+  year = time.localtime().tm_year
+  month = time.localtime().tm_mon
+  day = time.localtime().tm_mday
+  date = datetime.date(datetime(year, month, day))
+  what_day = date.isoweekday()
+  if what_day==1:
+    return (1, 9)
+  elif what_day==2:
+    return (2, 8)
+  elif what_day==3:
+    return(3, 7)
+  elif what_day==4:
+    return(4, 6)
+  elif what_day==5:
+    return(5, 0)
+  else:
+    return None
+  
 def get_random_color():
   return "#%06x" % random.randint(0, 0xFFFFFF)
 
@@ -47,7 +57,9 @@ def get_random_color():
 client = WeChatClient(app_id, app_secret)
 
 wm = WeChatMessage(client)
-wea, temperature = get_weather()
-data = {"weather":{"value":wea},"temperature":{"value":temperature},"love_days":{"value":get_count()},"birthday_left":{"value":get_birthday()},"words":{"value":get_words(), "color":get_random_color()}}
+weather_list = get_weather()
+traffic = traffic_restriction()
+data = {"weather":{"value":weather_list[0]},"high_temperature":{"value":weather_list[1]}, "low_temperature":{"value":weather_list[2]},"PM25":{"value":weather_list[3]}, "airquality":{"value": weather_list[-1]}, "traffic": {"value": str(traffic[0]) + ", " + str(traffic[1])}, "color":get_random_color()}
+print(data)
 res = wm.send_template(user_id, template_id, data)
 print(res)
